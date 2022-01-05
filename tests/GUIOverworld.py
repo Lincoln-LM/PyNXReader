@@ -12,22 +12,8 @@ sys.path.append('../')
 
 from nxreader import SWSHReader
 from structure import PK8
-from PIL import Image, ImageTk
 from gui import setup_styles
 from tkinter import ttk
-
-@lru_cache(maxsize=32)
-def get_mark(mark):
-    image_bytes = urllib.request.urlopen(f"https://www.serebii.net/swordshield/ribbons/{PK8.Ribbons[mark].lower() if mark != 255 else ''}mark.png").read()
-    im = Image.open(io.BytesIO(image_bytes)).convert('RGBA')
-    im.thumbnail((100,100), Image.ANTIALIAS)
-    return ImageTk.PhotoImage(im)
-
-@lru_cache(maxsize=32)
-def get_pokemon(species,shiny):
-    image_bytes = pb.SpriteResource('pokemon', species, shiny=shiny).img_data
-    im = Image.open(io.BytesIO(image_bytes)).convert('RGBA')
-    return ImageTk.PhotoImage(im)
 
 class Application(tk.Frame):
     def __init__(self, master=None):
@@ -88,16 +74,6 @@ class Application(tk.Frame):
                 self.displays[i].append(tk.Label(self))
                 self.displays[i][2].grid(column=3+(5 if i%2 else 0), row=2+int((i*3)/2), columnspan=2, rowspan=2)
                 
-                try:
-                    mark_image = get_mark(pkm.mark)
-                    self.cache.append(mark_image)
-                    self.displays[i][2].config(image=mark_image)
-                except Exception as e:
-                    pass
-
-                pokemon_image = get_pokemon(pkm.species, pkm.shinyType)
-                self.cache.append(pokemon_image)
-                self.displays[i][1].config(image=pokemon_image)
                 self.last_info = str(pkm)
                 self.displays[i][0].delete(1.0, tk.END)
                 self.displays[i][0].insert(1.0, str(pkm))
