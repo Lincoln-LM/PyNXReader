@@ -77,7 +77,7 @@ if __name__ == "__main__":
     odd_spawner = input("Odd Index Pair? (y/n): ").lower() == "y"
     
     adv,group_seed,fixed_seed,ec,pid,ivs,ability,gender,nature,shiny = \
-        read_wild_rng(group_id,odd_spawner,max_level - min_level,rolls,guaranteed_ivs)
+        read_wild_rng(group_id,max_level - min_level,rolls,guaranteed_ivs)
     if wild_seed == (-0x82A2B175229D6A5B) & 0xFFFFFFFFFFFFFFFF:
         print("Spawner is not active")
     else:
