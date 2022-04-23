@@ -207,7 +207,7 @@ class NXReader(object):
     def read_pointer(self,pointer,size,filename = None):
         jumps = pointer.replace("[","").replace("main","").split("]")
         self.sendCommand(f'pointerPeek 0x{size:X} 0x{" 0x".join(jump.replace("+","") for jump in jumps)}')
-        sleep(size/0x8000)
+        sleep(size/0x1000)
         buf = self.recv(size)
         if filename is not None:
             if filename == '':
@@ -398,19 +398,19 @@ class BDSPReader(NXReader):
         pass
 
     def readTrainerBlock(self):
-        return self.read_pointer("[[[[[[main+4E853F0]+18]+C0]+28]+B8]]+E8", 8)
+        return self.read_pointer("[[[[[[main+4C90330]+18]+C0]+28]+B8]]+E8", 8)
     
     def readDaycare(self):
-        return self.read_pointer("[[[[[[main+4E853F0]+18]+C0]+28]+B8]]+458", 17)
+        return self.read_pointer("[[[[[[main+4C90330]+18]+C0]+28]+B8]]+458", 17)
     
     def readWild(self,index=0):
-        return self.read_pointer(f"[[[[[[[[[[[[[[main+4E853F0]+18]+C0]+28]+B8]]+7E8]+58]+28]+10]+{(0x20+8*index):X}]+20]+18]+20",self.PK8bPARTYSIZE)
+        return self.read_pointer(f"[[[[[[[[[[[[[[main+4C90330]+18]+C0]+28]+B8]]+7E8]+58]+28]+10]+{(0x20+8*index):X}]+20]+18]+20",self.PK8bPARTYSIZE)
 
     def readParty(self,index):
-        return self.read_pointer(f"[[[[[[[[[[[[[[main+4E853F0]+18]+C0]+28]+B8]]+7F0]+10]+{(0x20+8*index):X}]+20]+18]+20",self.PK8bPARTYSIZE)
+        return self.read_pointer(f"[[[[[[[[[[[[[[main+4C90330]+18]+C0]+28]+B8]]+7F0]+10]+{(0x20+8*index):X}]+20]+18]+20",self.PK8bPARTYSIZE)
 
     def readRNG(self):
-        return self.read_pointer("[main+4FB2050]",16)
+        return self.read_pointer("[main+4FD43D0]",16)
     
     def readGroupSeed(self,index):
-        return self.read_pointer(f"[[[[[[[main+4E853F0]+18]+C0]+28]+B8]]+348]+{((index * 0x38) + 0x40):X}",8) 
+        return self.read_pointer(f"[[[[[[[main+4C90330]+18]+C0]+28]+B8]]+348]+{((index * 0x38) + 0x40):X}",8) 

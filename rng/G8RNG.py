@@ -193,6 +193,7 @@ class Xorshift:
     def previous(self):
         t = self.seed[2] >> 19 ^ self.seed[2] ^ self.seed[3]
         t ^= t >> 8
+        t ^= t >> 16
         t ^= t << 11 & 0xFFFFFFFF
         t ^= t << 22 & 0xFFFFFFFF
         self.seed = [t] + self.seed[0:3]
@@ -287,6 +288,7 @@ class OverworldRNG:
         self.egg_move_count = egg_move_count
         self.brilliant_thresh,self.brilliant_rolls = OverworldRNG.calculate_brilliant_info(kos)
         self.cute_charm = cute_charm
+        self.is_hidden = False
         self.filter = filter
     
     @property
@@ -335,11 +337,12 @@ class OverworldRNG:
             else:
                 state.level = self.min_level
             state.mark = OverworldRNG.rand_mark(go,self.weather_active,self.is_fishing,self.mark_charm)
-            state.brilliant_rand = go.rand(1000)
-            if state.brilliant_rand < self.brilliant_thresh:
-                state.brilliant = True
-            if not self.filter.compare_brilliant(state):
-                return
+            if not self.is_hidden:
+                state.brilliant_rand = go.rand(1000)
+                if state.brilliant_rand < self.brilliant_thresh:
+                    state.brilliant = True
+                if not self.filter.compare_brilliant(state):
+                    return
         
         if not self.is_shiny_locked:
             for roll in range((3 if self.shiny_charm else 1) + (self.brilliant_rolls if state.brilliant else 0)):

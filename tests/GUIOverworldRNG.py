@@ -518,6 +518,8 @@ class Application(tk.Frame):
                         self.data.set_columns()
                 self.data.insert('', tk.END, values=state.row)
                 print(state)
+        if first:
+            self.data.clear()
         self.stop_generating_work()
     
     def progress_work(self):
