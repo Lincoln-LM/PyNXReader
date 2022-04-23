@@ -39,6 +39,15 @@ class Filter:
             return False
             
         return self.compare_ivs(state)
+
+    def compare_sizeless(self,state):
+        if self.shininess == 0 and state.xor == 0:
+            return False
+            
+        return self.compare_ivs(state)
+    
+    def compare_size(self,state):
+        return not (not self.weight_min == None and not (self.weight_min <= state.weight <= self.weight_max and self.height_min <= state.height <= self.height_max))
     
     def compare_slot(self,state):
         return self.slot_min <= state.slot_rand <= self.slot_max if self.slot_min != None else True
@@ -462,6 +471,85 @@ class OverworldRNG:
     @staticmethod
     def calculateFromPKM(pkm):
         return OverworldRNG.calculate_fixed(pkm.seed,pkm.tid ^ pkm.sid,pkm.setShininess != 3,pkm.setIVs)[:3]
+
+
+class CryptoPatchRNG:
+    def __init__(self,seed=0,tid=0,sid=0,forced_ability=False,flawless_ivs=0,is_shiny_locked=False,filter=Filter(),genderless=False):
+        self.rng = XOROSHIRO(seed & 0xFFFFFFFFFFFFFFFF, seed >> 64)
+        self.advance = 0
+        self.tid = tid
+        self.sid = sid
+        self.forced_ability = forced_ability
+        self.flawless_ivs = flawless_ivs
+        self.is_shiny_locked = is_shiny_locked
+        self.genderless = genderless
+        self.filter = filter
+    
+    @property
+    def tsv(self):
+        return self.tid ^ self.sid
+        
+    def advance_fast(self,advances):
+        self.advance += advances
+        for _ in range(advances):
+            self.rng.next()
+
+    def generate(self):
+        state = self.generate_filter()
+        self.rng.next()
+        self.advance += 1
+        return state
+
+    def generate_filter(self):
+        state = OverworldState()
+        state.full_seed = self.rng.state
+        state.advance = self.advance
+        state.is_static = True
+        state.hide_ability = self.forced_ability
+        
+        go = XOROSHIRO(*self.rng.seed.copy())
+
+        state.ec = go.rand(0xFFFFFFFF)
+        state.pid = go.rand(0xFFFFFFFF)
+        state.xor = (((state.pid >> 16) ^ (state.pid & 0xFFFF)) ^ self.tsv)
+        shiny = state.xor < 16
+
+        if not self.filter.compare_shiny(shiny):
+            return
+
+        state.ivs = [32]*6
+        for i in range(self.flawless_ivs):
+            index = go.rand(6)
+            while state.ivs[index] != 32:
+                index = go.rand(6)
+            state.ivs[index] = 31
+        for i in range(6):
+            if state.ivs[i] == 32:
+                state.ivs[i] = go.rand(32)
+
+        if not self.filter.compare_sizeless(state):
+            return
+
+        if not self.forced_ability:
+            state.ability = go.rand(2)
+        else:
+            state.ability = 0
+        if not self.filter.compare_ability(state):
+            return
+        
+        if not self.genderless:
+            go.rand(253) + 1
+        
+        state.nature = go.rand(25)
+        if not self.filter.compare_nature(state):
+            return
+
+        state.height = go.rand(0x81) + go.rand(0x80)
+        state.weight = go.rand(0x81) + go.rand(0x80)
+        if not self.filter.compare_size(state):
+            return
+        
+        return state
 
 
 class BDSPStationaryGenerator:
