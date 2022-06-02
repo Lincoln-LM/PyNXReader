@@ -108,6 +108,15 @@ class XOROSHIRO(object):
             res = self.next() & mask
         return res
 
+    def rand_count(self, N = uintmask):
+        mask = XOROSHIRO.getMask(N)
+        res = self.next() & mask
+        count = 1
+        while res >= N:
+            res = self.next() & mask
+            count += 1
+        return res, count
+
     def quickrand1(self,mask): # 0~mask rand(mask + 1)
         return self.next() & mask
 
