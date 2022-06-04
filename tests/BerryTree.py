@@ -12,7 +12,7 @@ from rng import XOROSHIRO,OverworldRNG,Filter
 config = json.load(open("../config.json"))
 r = SWSHReader(config["IP"],usb_connection=config["USB"])
 
-# default is for the tree in front of the meetup spot
+# default is for the tree in front of the meetup
 BERRY_NAMES = ["Oran Berry", "Pecha Berry", "Cheri Berry"]
 BERRY_RATES = [33, 33, 33]
 POKEMON_NAMES = ["Skwovet", "Cherubi"]
@@ -83,7 +83,7 @@ def generate(rng: XOROSHIRO):
             berry_rand = _rng.rand(100)
             berry_name = BERRY_NAMES[-1]
             for i,rate in enumerate(BERRY_RATES):
-                if berry_rand <= rate:
+                if berry_rand < rate:
                     berry_name = BERRY_NAMES[i]
                     break
                 berry_rand -= rate
