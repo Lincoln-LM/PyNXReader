@@ -94,6 +94,10 @@ class XOROSHIRO(object):
     def nextuint(self):
         return self.next() & XOROSHIRO.uintmask
 
+    def reseed(self, seed0, seed1 = 0x82A2B175229D6A5B):
+        """Reseed rng without creating a new object"""
+        self.seed = [seed0, seed1]
+
     @staticmethod
     def getMask(x):
         x -= 1
